@@ -1,0 +1,10 @@
+{
+    "[cpp]": {
+        "editor.formatOnSave": true
+    },
+    "files.associations": {
+        "*.cmake.in": "cmake",
+        ".clang-format": "yaml",
+        ".clang-tidy": "yaml"
+    },
+}
