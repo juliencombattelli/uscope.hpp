@@ -1,0 +1,17 @@
+---
+# Requires at least clang-tidy 17
+
+Checks:
+# Enable everything and blacklist unwanted checks
+- '*'
+# Disable project specific checks
+- '-altera-*'
+- '-fuchsia-*'
+- '-llvmlibc-*'
+# Unwanted modernize checks
+- '-modernize-use-trailing-return-type'
+- '-modernize-pass-by-value' # Supporting only ctor at the moment
+
+WarningsAsErrors: '0'
+HeaderFilterRegex: ''
+FormatStyle: none
