@@ -14,19 +14,40 @@ using Iteration = int64_t;
 
 class BenchmarkState {
 public:
-    class Iterations;
-
     explicit BenchmarkState(Iteration iteration_count)
-        : remaining_iterations_(iteration_count)
+        : total_iterations_(iteration_count)
+        , remaining_iterations_(iteration_count)
     {
     }
 
-    [[nodiscard]] inline Iterations iterate() const;
+    [[nodiscard]] inline bool keep_running();
 
     [[nodiscard]] inline Iteration remaining_iterations() const;
 
 private:
+    void start_keep_running()
+    {
+        flags_.started = 1;
+        total_iterations_ = skipped() ? 0 : max_iterations;
+        if (BENCHMARK_BUILTIN_EXPECT(profiler_manager_ != nullptr, false)) {
+            profiler_manager_->AfterSetupStart();
+        }
+        manager_->StartStopBarrier();
+        if (!skipped()) {
+            ResumeTiming();
+        }
+    }
+
+    struct Flags {
+        uint8_t started : 1;
+        uint8_t finished : 1;
+        uint8_t skipped : 1;
+    };
+
+    Iteration total_iterations_;
     Iteration remaining_iterations_;
+    Flags flags_ {};
+    std::vector<int64_t> iterations_time_;
 };
 
 template<typename Fn, typename... Args>
@@ -82,53 +103,12 @@ private:
     std::vector<Benchmark> benchmarks_;
 };
 
-class BenchmarkState::Iterations {
-public:
-    struct [[nodiscard]] Iterator {
-        Iteration remaining_iterations;
-
-        friend Iteration operator*(Iterator& self)
-        {
-            return self.remaining_iterations;
-        }
-
-        friend Iterator& operator++(Iterator& self)
-        {
-            --self.remaining_iterations;
-            return self;
-        }
-
-        friend bool operator!=(Iterator const& lhs, Iterator const& /*rhs*/)
-        {
-            if (lhs.remaining_iterations != 0) [[likely]] {
-                return true;
-            }
-            return false;
-        }
-    };
-
-    explicit Iterations(Iteration iteration_count)
-        : iteration_count_(iteration_count)
-    {
-    }
-
-    Iterator begin() const
-    {
-        return Iterator(iteration_count_);
-    }
-
-    static Iterator end()
-    {
-        return Iterator(0);
-    }
-
-private:
-    Iteration iteration_count_;
-};
-
-[[nodiscard]] BenchmarkState::Iterations BenchmarkState::iterate() const
+[[nodiscard]] bool BenchmarkState::keep_running()
 {
-    return BenchmarkState::Iterations(remaining_iterations_);
+    if (!flags_.started) {
+        flags_.started = true;
+    }
+    if (remaining_iterations_-- > 0) { }
 }
 
 [[nodiscard]] Iteration BenchmarkState::remaining_iterations() const
