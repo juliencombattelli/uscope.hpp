@@ -8,7 +8,7 @@ using namespace std::chrono_literals;
 
 void test_sleep_1ms(uscope::BenchmarkState& state)
 {
-    for ([[maybe_unused]] auto iteration : state.iterate()) {
+    while (state.keep_running()) {
         std::this_thread::sleep_for(1ms);
     }
 }
@@ -19,7 +19,7 @@ int main()
 {
     uscope::BenchmarkRunner runner(
         uscope::Config {
-            .iteration_count = 10'000,
+            .iteration_count = 10,
         });
     runner.add_benchmark("test_sleep_1ms", &test_sleep_1ms);
     runner.run_all_benchmarks();
