@@ -278,7 +278,7 @@ class ConsoleReporter : public benchmark::ConsoleReporter {
                 cpu_time_str,
                 timeLabel);
         } else {
-            assert(result.aggregate_unit == StatisticUnit::kPercentage);
+            assert(result.aggregate_unit == benchmark::StatisticUnit::kPercentage);
             printer(
                 Out,
                 LogColor::YELLOW,
